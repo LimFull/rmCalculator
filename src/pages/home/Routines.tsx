@@ -5,13 +5,14 @@ interface Props {
     rm5: number;
     rm10: number;
     rm15: number;
+    barWeight: number;
 }
 
-const Routines: FC<Props> = ({rm5, rm10, rm15}) => {
+const Routines: FC<Props> = ({rm5, rm10, rm15, barWeight}) => {
     const rage: number = rm5 * 0.05;
 
     const getTotalWeight = (weight: number) => {
-        return (weight * 2) + 15;
+        return (weight * 2) + barWeight;
     }
 
     const isCloseTo = (left: number, right: number, to: number): boolean => {
@@ -54,7 +55,7 @@ const Routines: FC<Props> = ({rm5, rm10, rm15}) => {
     }
 
     const getDiskWeight = (weight: number): number => {
-        const bar = 15;
+        const bar = barWeight;
         const total = weight - bar;
         const disks = [20, 20, 10, 10, 5, 2.5, 1.25];
 

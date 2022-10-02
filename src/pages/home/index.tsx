@@ -5,6 +5,7 @@ import Routines from "./Routines";
 const Home: FC = () => {
     const [lbs, setLbs] = useState<string>('');
     const [reps, setReps] = useState<number>(1);
+    const [barWeight, setBarWeight] = useState<number>(15);
     const [principleRms, setPrincipleRms] = useState<number[]>([0, 0, 0, 0])
     const ratio: number[] = [0, 1.0, 0.95, 0.93, 0.90, 0.87, 0.85, 0.83, 0.80, 0.77, 0.75, 0.73, 0.70, 0.67, 0.65, 0.63]
 
@@ -14,6 +15,10 @@ const Home: FC = () => {
 
     const handleSelectReps = (e: ChangeEvent<HTMLSelectElement>) => {
         setReps(Number(e.target.value));
+    }
+
+    const handleBarWeightChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setBarWeight(Number(e.target.value));
     }
 
     const onCalculateClick = () => {
@@ -48,14 +53,24 @@ const Home: FC = () => {
             </Reps>
             <CalculateBtn onClick={onCalculateClick}>계산</CalculateBtn>
         </InputContainer>
+        <BarContainer>
+            {"바 무게"}<LBSInput placeholder={'15'} value={barWeight.toString()} onChange={handleBarWeightChange}/>
+        </BarContainer>
         <RmText>{`1RM : ${principleRms[0]} kg`}</RmText>
         <RmText>{`5RM : ${principleRms[1]} kg`}</RmText>
         <RmText>{`10RM : ${principleRms[2]} kg`}</RmText>
         <RmText>{`15RM : ${principleRms[3]} kg`}</RmText>
-        <Routines rm5={principleRms[1]} rm10={principleRms[2]} rm15={principleRms[3]}></Routines>
+        <Routines rm5={principleRms[1]} rm10={principleRms[2]} rm15={principleRms[3]} barWeight={barWeight}></Routines>
     </Container>
 }
 
+const BarContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 12px;
+
+`
 
 const RmText = styled.div`
 `
@@ -75,7 +90,9 @@ const LBSInput = styled.input`
   width: 100px;
   text-align: right;
   margin-right: 20px;
+  margin-left: 10px;
 `
+
 const InputContainer = styled.div`
   display: flex;
   flex-direction: row;
