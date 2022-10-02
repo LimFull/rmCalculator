@@ -10,13 +10,47 @@ interface Props {
 const Routines: FC<Props> = ({rm5, rm10, rm15}) => {
     const rage: number = rm5 * 0.05;
 
+    const getTotalWeight = (weight: number) => {
+        return (weight * 2) + 15;
+    }
 
     const isCloseTo = (left: number, right: number, to: number): boolean => {
-        console.log("left", left, "right", right, "to", to)
-        const lastGap = Math.abs((15 + (left) * 2) - (15 + (to * 2)));
-        const currentGap = Math.abs((15 + (right) * 2) - (15 + (to * 2)));
-        console.log("last,currentgap", lastGap, currentGap)
+        const lastGap = Math.abs(getTotalWeight(left) - getTotalWeight(to));
+        const currentGap = Math.abs(getTotalWeight(right) - getTotalWeight(to));
+
         return lastGap < currentGap;
+    }
+
+    const findCloseWeight = (disks: number[], weight: number, to: number): number => {
+        const filteredDisks: number[] = disks.filter(n => n > 0);
+        const conditions: number[] = [];
+
+        if (filteredDisks.length === 0) {
+            return weight;
+        }
+
+
+        for (let i = 0; i < filteredDisks.length; i++) {
+            conditions.push(weight + filteredDisks[i])
+        }
+
+        let distance = Math.abs(getTotalWeight(weight) - getTotalWeight(to));
+        let diskIndex = -1;
+        for (let i = 0; i < conditions.length; i++) {
+            if (distance > Math.abs(getTotalWeight(filteredDisks[i] + weight) - getTotalWeight(to))) {
+                diskIndex = i;
+                distance = Math.abs(getTotalWeight(filteredDisks[i] + weight) - getTotalWeight(to))
+            }
+        }
+
+        if (diskIndex === -1) {
+            return weight
+        }
+
+        const newWeight = weight + filteredDisks[diskIndex];
+
+        filteredDisks[diskIndex] = 0;
+        return findCloseWeight(filteredDisks, newWeight, to);
     }
 
     const getDiskWeight = (weight: number): number => {
@@ -42,23 +76,10 @@ const Routines: FC<Props> = ({rm5, rm10, rm15}) => {
             last = current;
         }
 
-        // 낮은 무게부터 꽂으면서 목표 무게와 가장 가까운 무게 찾기
-        disks.reverse()
-        let addingLast = last;
-        let addingCurrent = 0;
-        for (let disk of disks) {
-            addingCurrent = addingLast;
-            addingCurrent += disk;
-            if (isCloseTo(addingLast, addingCurrent, half)) {
-                return addingLast;
-            }
-            addingLast = addingCurrent
-        }
-
-        return addingLast;
+        // 목표 무게와 가장 가까운 무게 찾기
+        return findCloseWeight(disks, last, half);
     }
-    const goal = 32;
-    console.log('test', getDiskWeight(goal), getDiskWeight(goal) * 2 + 15)
+
     return <Container>
         <RmGroup>
             <Title>15RM</Title>
