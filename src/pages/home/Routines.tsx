@@ -8,9 +8,10 @@ interface Props {
   rm15: number;
   barWeight: number;
   kind: KIND;
+  bodyWeight: number;
 }
 
-const Routines: FC<Props> = ({rm5, rm10, rm15, barWeight, kind}) => {
+const Routines: FC<Props> = ({rm5, rm10, rm15, barWeight, kind, bodyWeight}) => {
   const rage: number = rm5 * 0.05;
 
   const getTotalWeight = (weight: number, kind: KIND) => {
@@ -28,10 +29,16 @@ const Routines: FC<Props> = ({rm5, rm10, rm15, barWeight, kind}) => {
   // }
 
   const findCloseWeight = (disks: number[], weight: number, to: number, kind: KIND): number => {
-    const filteredDisks: number[] = disks.filter(n => n > 0);
+    const filteredDisks: number[] = disks.filter(n => {
+      if (kind === KIND.PLATE) {
+        return true;
+      }
+      return n > 0
+    });
+
     const conditions: number[] = [];
 
-    if (filteredDisks.length === 0) {
+    if (filteredDisks.length === 0 || filteredDisks.filter(n => n > 0).length === 0) {
       return weight;
     }
 
@@ -63,7 +70,8 @@ const Routines: FC<Props> = ({rm5, rm10, rm15, barWeight, kind}) => {
     return newWeight
   }
 
-  const getDiskWeight = (weight: number, kind: KIND): number => {
+  const getDiskWeight = (originalWeight: number, kind: KIND): number => {
+    const weight = Math.max(0, kind === KIND.PLATE ? originalWeight - bodyWeight : originalWeight);
     const bar = barWeight;
     const barlessWeight = weight - bar;
     let disks: number[] = [];
@@ -71,7 +79,7 @@ const Routines: FC<Props> = ({rm5, rm10, rm15, barWeight, kind}) => {
     if (kind === KIND.BARBELL) {
       disks = [20, 20, 10, 10, 5, 2.5, 1.25];
     } else if (kind === KIND.PLATE) {
-      disks = [20, 20, 20, 20, 10, 10, 10, 10, 5, 5, 2.5, 2.5, 1.25, 1.25];
+      disks = [20, 20, 20, 20, 10, 10, 10, 10, 5, 5, 2.5, 2.5, 1.25, 1.25, 0];
     } else if (kind === KIND.DUMBBELL) {
       disks = [2.5, 3.5, 4.5, 5.5, 6.5, 8, 9, 10, 11.5, 13.5, 16, 18, 20.5, 22.5, 24];
     }
