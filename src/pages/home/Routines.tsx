@@ -10,12 +10,12 @@ interface Props {
   rm15: number;
   barWeight: number;
   kind: KIND;
-  bodyWeight: number;
+  bodyWeight?: number;
 }
 
-const Routines: FC<Props> = ({rm5, rm10, rm15, barWeight, kind, bodyWeight}) => {
+const Routines: FC<Props> = ({rm5, rm10, rm15, barWeight, kind, bodyWeight = 0}) => {
   const rage: number = rm5 * 0.05;
-  
+
   const minus = (a: number, b: number): number => {
     return new Big(a).minus(b).toNumber();
   }
