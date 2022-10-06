@@ -1,6 +1,8 @@
 import {FC} from "react";
 import styled from "styled-components";
 import {KIND} from "../../type/kind";
+import Big from "big.js";
+
 
 interface Props {
   rm5: number;
@@ -13,6 +15,10 @@ interface Props {
 
 const Routines: FC<Props> = ({rm5, rm10, rm15, barWeight, kind, bodyWeight}) => {
   const rage: number = rm5 * 0.05;
+  
+  const minus = (a: number, b: number): number => {
+    return new Big(a).minus(b).toNumber();
+  }
 
   const getTotalWeight = (weight: number, kind: KIND) => {
     if (kind === KIND.BARBELL) {
@@ -30,9 +36,6 @@ const Routines: FC<Props> = ({rm5, rm10, rm15, barWeight, kind, bodyWeight}) => 
 
   const findCloseWeight = (disks: number[], weight: number, to: number, kind: KIND): number => {
     const filteredDisks: number[] = disks.filter(n => {
-      if (kind === KIND.PLATE) {
-        return true;
-      }
       return n > 0
     });
 
@@ -46,32 +49,37 @@ const Routines: FC<Props> = ({rm5, rm10, rm15, barWeight, kind, bodyWeight}) => 
       conditions.push(weight + filteredDisks[i])
     }
 
-    let distance = kind === KIND.BARBELL ? Math.abs(getTotalWeight(weight, kind) - getTotalWeight(to, kind)) : Infinity;
+    let distance = kind === KIND.BARBELL ? Math.abs(minus(getTotalWeight(weight, kind), getTotalWeight(to, kind))) : Math.abs(minus(weight, to));
 
     let diskIndex = -1;
     for (let i = 0; i < conditions.length; i++) {
-      if (distance > Math.abs(getTotalWeight(filteredDisks[i] + weight, kind) - getTotalWeight(to, kind))) {
+      if (distance > Math.abs(minus(getTotalWeight(filteredDisks[i] + weight, kind), getTotalWeight(to, kind)))) {
         diskIndex = i;
-        distance = Math.abs(getTotalWeight(filteredDisks[i] + weight, kind) - getTotalWeight(to, kind))
+        distance = Math.abs(minus(getTotalWeight(filteredDisks[i] + weight, kind), getTotalWeight(to, kind)))
       }
     }
 
+
     if (diskIndex === -1) {
       return weight
+    }
+
+    if (filteredDisks[diskIndex] === 0) {
+      return 0;
     }
 
     const newWeight = weight + filteredDisks[diskIndex];
 
     filteredDisks[diskIndex] = 0;
 
-    if (kind === KIND.BARBELL) {
+    if (kind === KIND.BARBELL || kind === KIND.PLATE) {
       return findCloseWeight(filteredDisks, newWeight, to, kind);
     }
     return newWeight
   }
 
   const getDiskWeight = (originalWeight: number, kind: KIND): number => {
-    const weight = Math.max(0, kind === KIND.PLATE ? originalWeight - bodyWeight : originalWeight);
+    const weight = Math.max(0, kind === KIND.PLATE ? minus(originalWeight, bodyWeight) : originalWeight);
     const bar = barWeight;
     const barlessWeight = weight - bar;
     let disks: number[] = [];
@@ -115,8 +123,6 @@ const Routines: FC<Props> = ({rm5, rm10, rm15, barWeight, kind, bodyWeight}) => 
 
     // 목표 무게와 가장 가까운 무게 찾기
     return findCloseWeight(disks, last, goal, kind);
-
-
   }
 
   return <Container>
